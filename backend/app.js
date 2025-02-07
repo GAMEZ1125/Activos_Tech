@@ -11,6 +11,7 @@ const registroActivoRoutes = require('./routes/registroActivoRoutes');
 const tipoActivoFijoRoutes = require('./routes/tipoActivoFijoRoutes');
 const usuarioCompanyClienteRoutes = require('./routes/usuarioCompanyClienteRoutes');
 const campoActivoFijoRoutes = require('./routes/campoActivoFijoRoutes');
+const campoRoutes = require('./routes/campoRoutes'); // Importa las rutas de Campo
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/registros-activos', registroActivoRoutes);
 app.use('/api/tipos-activos-fijos', tipoActivoFijoRoutes);
 app.use('/api/usuarios-companies-clientes', usuarioCompanyClienteRoutes);
 app.use('/api/campos-activos-fijos', campoActivoFijoRoutes);
+app.use('/api/campos', campoRoutes); // Agrega la ruta de Campo
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {

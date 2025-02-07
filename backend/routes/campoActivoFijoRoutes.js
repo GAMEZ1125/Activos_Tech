@@ -9,5 +9,6 @@ router.get('/tipo/:tipo_activo_fijo_id', authenticateToken, CampoActivoFijoContr
 router.post('/', authenticateToken, CampoActivoFijoController.createCampoActivoFijo);
 router.put('/:id', authenticateToken, CampoActivoFijoController.updateCampoActivoFijo);
 router.delete('/:id', authenticateToken, CampoActivoFijoController.deleteCampoActivoFijo);
+router.put('/tipo/:tipo_activo_fijo_id', authenticateToken, CampoActivoFijoController.updateCamposByTipo);
 
 module.exports = router;

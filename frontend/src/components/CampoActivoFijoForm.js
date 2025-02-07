@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import '../css/CampoActivoFijoForm.css'; // Importa el archivo CSS
 
 const CampoActivoFijoForm = () => {
   const { tipo_activo_fijo_id } = useParams();
@@ -11,22 +12,38 @@ const CampoActivoFijoForm = () => {
   useEffect(() => {
     const fetchCampos = async () => {
       try {
-        const response = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
+        const response = await api.get('/campos');
         setCampos(response.data);
-        setSelectedCampos(response.data.filter(campo => campo.visible).map(campo => campo.campo));
       } catch (error) {
         console.error('Error al obtener campos:', error);
         alert('Error al obtener los campos.');
       }
     };
+
+    const fetchSelectedCampos = async () => {
+      try {
+        const response = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
+        setSelectedCampos(response.data.map(campo => campo.campo_id));
+        // Actualiza los campos con la propiedad visible
+        setCampos(prevCampos => prevCampos.map(campo => ({
+          ...campo,
+          visible: response.data.find(selectedCampo => selectedCampo.campo_id === campo.id)?.visible || false
+        })));
+      } catch (error) {
+        console.error('Error al obtener campos seleccionados:', error);
+        alert('Error al obtener los campos seleccionados.');
+      }
+    };
+
     fetchCampos();
+    fetchSelectedCampos();
   }, [tipo_activo_fijo_id]);
 
-  const handleCampoChange = (campo) => {
+  const handleCampoChange = (campoId) => {
     setSelectedCampos(prevSelectedCampos =>
-      prevSelectedCampos.includes(campo)
-        ? prevSelectedCampos.filter(c => c !== campo)
-        : [...prevSelectedCampos, campo]
+      prevSelectedCampos.includes(campoId)
+        ? prevSelectedCampos.filter(id => id !== campoId)
+        : [...prevSelectedCampos, campoId]
     );
   };
 
@@ -35,8 +52,8 @@ const CampoActivoFijoForm = () => {
     try {
       await api.put(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`, {
         campos: campos.map(campo => ({
-          ...campo,
-          visible: selectedCampos.includes(campo.campo)
+          campo_id: campo.id,
+          visible: selectedCampos.includes(campo.id)
         }))
       });
       alert('Campos actualizados con éxito.');
@@ -55,13 +72,13 @@ const CampoActivoFijoForm = () => {
           <div key={campo.id} className="form-check">
             <input
               type="checkbox"
-              className="form-check-input"
+              className={`form-check-input ${campo.visible ? 'visible-true' : ''}`}
               id={`campo-${campo.id}`}
-              checked={selectedCampos.includes(campo.campo)}
-              onChange={() => handleCampoChange(campo.campo)}
+              checked={selectedCampos.includes(campo.id)}
+              onChange={() => handleCampoChange(campo.id)}
             />
             <label className="form-check-label" htmlFor={`campo-${campo.id}`}>
-              {campo.campo}
+              {campo.nombre}
             </label>
           </div>
         ))}

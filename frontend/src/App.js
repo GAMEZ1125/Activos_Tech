@@ -16,6 +16,7 @@ import CompanyClienteDashboard from './components/CompanyClienteDashboard';
 import CompanyClienteForm from './components/CompanyClienteForm';
 import ActivoFijoDashboard from './components/ActivoFijoDashboard';
 import ActivoFijoForm from './components/ActivoFijoForm';
+import CampoActivoFijoForm from './components/CampoActivoFijoForm'; // Importa el componente
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/tipos-activos-fijos" element={<TipoActivoFijoDashboard />} />
           <Route path="/tipos-activos-fijos/new" element={<TipoActivoFijoForm />} />
           <Route path="/tipos-activos-fijos/edit/:id" element={<TipoActivoFijoForm />} />
+          <Route path="/tipos-activos-fijos/:tipo_activo_fijo_id/campos" element={<CampoActivoFijoForm />} /> {/* Asegúrate de que esta línea esté presente */}
           <Route path="/company-clientes" element={<CompanyClienteDashboard />} />
           <Route path="/company-clientes/new" element={<CompanyClienteForm />} />
           <Route path="/company-clientes/edit/:id" element={<CompanyClienteForm />} />
