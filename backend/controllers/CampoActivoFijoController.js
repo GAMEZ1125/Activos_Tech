@@ -75,8 +75,8 @@ const CampoActivoFijoController = {
       // Eliminar las relaciones existentes para el tipo de activo fijo
       await CampoActivoFijo.destroy({ where: { tipo_activo_fijo_id } });
 
-      // Crear nuevas relaciones
-      const newCampos = campos.map(campo => ({
+      // Crear nuevas relaciones solo para los campos seleccionados
+      const newCampos = campos.filter(campo => campo.visible).map(campo => ({
         tipo_activo_fijo_id,
         campo_id: campo.campo_id,
         visible: campo.visible,
