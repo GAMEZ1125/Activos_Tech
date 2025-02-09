@@ -1,4 +1,5 @@
 const CampoActivoFijo = require('../models/CampoActivoFijo');
+const Campo = require('../models/Campo');
 
 const CampoActivoFijoController = {
   getAllCamposActivosFijos: async (req, res) => {
@@ -14,7 +15,13 @@ const CampoActivoFijoController = {
   getCamposActivosFijosByTipo: async (req, res) => {
     const { tipo_activo_fijo_id } = req.params;
     try {
-      const camposActivosFijos = await CampoActivoFijo.findAll({ where: { tipo_activo_fijo_id } });
+      const camposActivosFijos = await CampoActivoFijo.findAll({
+        where: { tipo_activo_fijo_id },
+        include: [{
+          model: Campo,
+          attributes: ['nombre']
+        }]
+      });
       res.json(camposActivosFijos);
     } catch (error) {
       console.error('Error al obtener campos activos fijos por tipo:', error);

@@ -43,55 +43,6 @@ const ActivoFijoForm = () => {
         setTiposActivos(tiposActivosFijosResponse.data);
         setAreas(areasResponse.data);
         setCompanies(companiesResponse.data);
-
-        if (id) {
-          const response = await api.get(`/activos-fijos/${id}`);
-          const {
-            tipo_activo_fijo_id,
-            nombre_activo_fijo,
-            marca,
-            modelo,
-            serial,
-            imei,
-            cpu,
-            ram,
-            tipo_almacenamiento,
-            cantidad_almacenamiento,
-            ubicacion,
-            usuario_correo,
-            contraseña,
-            tipo_conexion,
-            ip,
-            puerto,
-            usuario_responsable,
-            area_id,
-            company_cliente_id,
-            estado,
-            observaciones
-          } = response.data;
-
-          setTipoActivioFijoId(tipo_activo_fijo_id);
-          setNombreActivioFijo(nombre_activo_fijo);
-          setMarca(marca);
-          setModelo(modelo);
-          setSerial(serial);
-          setImei(imei);
-          setCpu(cpu);
-          setRam(ram);
-          setTipoAlmacenamiento(tipo_almacenamiento);
-          setCantidadAlmacenamiento(cantidad_almacenamiento);
-          setUbicacion(ubicacion);
-          setUsuarioCorreo(usuario_correo);
-          setContraseña(contraseña);
-          setTipoConexion(tipo_conexion);
-          setIp(ip);
-          setPuerto(puerto);
-          setUsuarioResponsable(usuario_responsable);
-          setAreaId(area_id);
-          setCompanyClienteId(company_cliente_id);
-          setEstado(estado);
-          setObservaciones(observaciones);
-        }
       } catch (error) {
         console.error('Error al obtener datos:', error);
         alert('Error al obtener datos.');
@@ -99,40 +50,71 @@ const ActivoFijoForm = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, []);
 
   useEffect(() => {
     const fetchCamposVisibles = async () => {
       if (tipo_activo_fijo_id) {
         try {
-          const camposResponse = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
-          console.log('Respuesta de campos:', camposResponse.data); // Para depuración
+          // Obtener campos visibles con join a tabla campos
+          const response = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
+          const camposResponse = await api.get('/campos');
+          const camposMap = {};
+          camposResponse.data.forEach(campo => {
+            camposMap[campo.id] = campo.nombre;
+          });
+
+          // Mapear campo_id a nombres de campos
+          const camposVisiblesNombres = response.data
+            .filter(campo => campo.visible)
+            .map(campo => camposMap[campo.campo_id]);
+
+          setCamposVisibles(camposVisiblesNombres);
           
-          // Asumiendo que la respuesta tiene la estructura correcta con el campo_id
-          const camposIds = camposResponse.data
-            .filter(campo => campo.visible) // Solo campos visibles
-            .map(campo => {
-              // Asegúrate de que campo.Campo existe antes de acceder a nombre
-              if (campo.Campo) {
-                return campo.Campo.nombre;
+          // Si es modo edición, obtener los datos del activo
+          if (id) {
+            const activoResponse = await api.get(`/activos-fijos/${id}`);
+            const data = activoResponse.data;
+            
+            // Actualizar estados solo para campos visibles
+            Object.entries(data).forEach(([key, value]) => {
+              if (camposVisiblesNombres.includes(key)) {
+                switch(key) {
+                  case 'nombre_activo_fijo': setNombreActivioFijo(value); break;
+                  case 'marca': setMarca(value); break;
+                  case 'modelo': setModelo(value); break;
+                  case 'serial': setSerial(value); break;
+                  case 'imei': setImei(value); break;
+                  case 'cpu': setCpu(value); break;
+                  case 'ram': setRam(value); break;
+                  case 'tipo_almacenamiento': setTipoAlmacenamiento(value); break;
+                  case 'cantidad_almacenamiento': setCantidadAlmacenamiento(value); break;
+                  case 'ubicacion': setUbicacion(value); break;
+                  case 'usuario_correo': setUsuarioCorreo(value); break;
+                  case 'contraseña': setContraseña(value); break;
+                  case 'tipo_conexion': setTipoConexion(value); break;
+                  case 'ip': setIp(value); break;
+                  case 'puerto': setPuerto(value); break;
+                  case 'usuario_responsable': setUsuarioResponsable(value); break;
+                }
               }
-              // Si no existe Campo, intenta usar el nombre directamente del campo
-              return campo.nombre;
-            })
-            .filter(Boolean); // Elimina valores undefined/null
-          
-          console.log('Campos visibles:', camposIds); // Para depuración
-          setCamposVisibles(camposIds);
+            });
+
+            // Campos obligatorios siempre se actualizan
+            setAreaId(data.area_id);
+            setCompanyClienteId(data.company_cliente_id);
+            setEstado(data.estado);
+            setObservaciones(data.observaciones);
+          }
         } catch (error) {
           console.error('Error al obtener campos visibles:', error);
           alert('Error al obtener campos visibles.');
         }
       }
     };
-    
 
     fetchCamposVisibles();
-  }, [tipo_activo_fijo_id]);
+  }, [tipo_activo_fijo_id, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -186,6 +168,7 @@ const ActivoFijoForm = () => {
             className="form-control"
             value={tipo_activo_fijo_id}
             onChange={(e) => setTipoActivioFijoId(e.target.value)}
+            required
           >
             <option value="">Seleccione un tipo de activo fijo</option>
             {tiposActivos.map(tipo => (
@@ -193,200 +176,204 @@ const ActivoFijoForm = () => {
             ))}
           </select>
         </div>
-        {tipo_activo_fijo_id && camposVisibles.includes('nombre_activo_fijo') && (
-          <div className="form-group">
-            <label htmlFor="nombre_activo_fijo">Nombre del Activo Fijo</label>
-            <input
-              type="text"
-              id="nombre_activo_fijo"
-              className="form-control"
-              value={nombre_activo_fijo}
-              onChange={(e) => setNombreActivioFijo(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('marca') && (
-          <div className="form-group">
-            <label htmlFor="marca">Marca</label>
-            <input
-              type="text"
-              id="marca"
-              className="form-control"
-              value={marca}
-              onChange={(e) => setMarca(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('modelo') && (
-          <div className="form-group">
-            <label htmlFor="modelo">Modelo</label>
-            <input
-              type="text"
-              id="modelo"
-              className="form-control"
-              value={modelo}
-              onChange={(e) => setModelo(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('serial') && (
-          <div className="form-group">
-            <label htmlFor="serial">Serial</label>
-            <input
-              type="text"
-              id="serial"
-              className="form-control"
-              value={serial}
-              onChange={(e) => setSerial(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('imei') && (
-          <div className="form-group">
-            <label htmlFor="imei">IMEI</label>
-            <input
-              type="text"
-              id="imei"
-              className="form-control"
-              value={imei}
-              onChange={(e) => setImei(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('cpu') && (
-          <div className="form-group">
-            <label htmlFor="cpu">CPU</label>
-            <input
-              type="text"
-              id="cpu"
-              className="form-control"
-              value={cpu}
-              onChange={(e) => setCpu(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('ram') && (
-          <div className="form-group">
-            <label htmlFor="ram">RAM</label>
-            <input
-              type="text"
-              id="ram"
-              className="form-control"
-              value={ram}
-              onChange={(e) => setRam(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('tipo_almacenamiento') && (
-          <div className="form-group">
-            <label htmlFor="tipo_almacenamiento">Tipo de Almacenamiento</label>
-            <input
-              type="text"
-              id="tipo_almacenamiento"
-              className="form-control"
-              value={tipo_almacenamiento}
-              onChange={(e) => setTipoAlmacenamiento(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('cantidad_almacenamiento') && (
-          <div className="form-group">
-            <label htmlFor="cantidad_almacenamiento">Cantidad de Almacenamiento</label>
-            <input
-              type="text"
-              id="cantidad_almacenamiento"
-              className="form-control"
-              value={cantidad_almacenamiento}
-              onChange={(e) => setCantidadAlmacenamiento(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('ubicacion') && (
-          <div className="form-group">
-            <label htmlFor="ubicacion">Ubicación</label>
-            <input
-              type="text"
-              id="ubicacion"
-              className="form-control"
-              value={ubicacion}
-              onChange={(e) => setUbicacion(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('usuario_correo') && (
-          <div className="form-group">
-            <label htmlFor="usuario_correo">Usuario Correo</label>
-            <input
-              type="text"
-              id="usuario_correo"
-              className="form-control"
-              value={usuario_correo}
-              onChange={(e) => setUsuarioCorreo(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('contraseña') && (
-          <div className="form-group">
-            <label htmlFor="contraseña">Contraseña</label>
-            <input
-              type="text"
-              id="contraseña"
-              className="form-control"
-              value={contraseña}
-              onChange={(e) => setContraseña(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('tipo_conexion') && (
-          <div className="form-group">
-            <label htmlFor="tipo_conexion">Tipo de Conexión</label>
-            <input
-              type="text"
-              id="tipo_conexion"
-              className="form-control"
-              value={tipo_conexion}
-              onChange={(e) => setTipoConexion(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('ip') && (
-          <div className="form-group">
-            <label htmlFor="ip">IP</label>
-            <input
-              type="text"
-              id="ip"
-              className="form-control"
-              value={ip}
-              onChange={(e) => setIp(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('puerto') && (
-          <div className="form-group">
-            <label htmlFor="puerto">Puerto</label>
-            <input
-              type="text"
-              id="puerto"
-              className="form-control"
-              value={puerto}
-              onChange={(e) => setPuerto(e.target.value)}
-            />
-          </div>
-        )}
-        {tipo_activo_fijo_id && camposVisibles.includes('usuario_responsable') && (
-          <div className="form-group">
-            <label htmlFor="usuario_responsable">Usuario Responsable</label>
-            <input
-              type="text"
-              id="usuario_responsable"
-              className="form-control"
-              value={usuario_responsable}
-              onChange={(e) => setUsuarioResponsable(e.target.value)}
-            />
-          </div>
-        )}
+
         {tipo_activo_fijo_id && (
           <>
+            {camposVisibles.includes('nombre_activo_fijo') && (
+              <div className="form-group">
+                <label htmlFor="nombre_activo_fijo">Nombre del Activo Fijo</label>
+                <input
+                  type="text"
+                  id="nombre_activo_fijo"
+                  className="form-control"
+                  value={nombre_activo_fijo}
+                  onChange={(e) => setNombreActivioFijo(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            
+            {camposVisibles.includes('marca') && (
+              <div className="form-group">
+                <label htmlFor="marca">Marca</label>
+                <input
+                  type="text"
+                  id="marca"
+                  className="form-control"
+                  value={marca}
+                  onChange={(e) => setMarca(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('modelo') && (
+              <div className="form-group">
+                <label htmlFor="modelo">Modelo</label>
+                <input
+                  type="text"
+                  id="modelo"
+                  className="form-control"
+                  value={modelo}
+                  onChange={(e) => setModelo(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('serial') && (
+              <div className="form-group">
+                <label htmlFor="serial">Serial</label>
+                <input
+                  type="text"
+                  id="serial"
+                  className="form-control"
+                  value={serial}
+                  onChange={(e) => setSerial(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('imei') && (
+              <div className="form-group">
+                <label htmlFor="imei">IMEI</label>
+                <input
+                  type="text"
+                  id="imei"
+                  className="form-control"
+                  value={imei}
+                  onChange={(e) => setImei(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('cpu') && (
+              <div className="form-group">
+                <label htmlFor="cpu">CPU</label>
+                <input
+                  type="text"
+                  id="cpu"
+                  className="form-control"
+                  value={cpu}
+                  onChange={(e) => setCpu(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('ram') && (
+              <div className="form-group">
+                <label htmlFor="ram">RAM</label>
+                <input
+                  type="text"
+                  id="ram"
+                  className="form-control"
+                  value={ram}
+                  onChange={(e) => setRam(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('tipo_almacenamiento') && (
+              <div className="form-group">
+                <label htmlFor="tipo_almacenamiento">Tipo de Almacenamiento</label>
+                <input
+                  type="text"
+                  id="tipo_almacenamiento"
+                  className="form-control"
+                  value={tipo_almacenamiento}
+                  onChange={(e) => setTipoAlmacenamiento(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('cantidad_almacenamiento') && (
+              <div className="form-group">
+                <label htmlFor="cantidad_almacenamiento">Cantidad de Almacenamiento</label>
+                <input
+                  type="text"
+                  id="cantidad_almacenamiento"
+                  className="form-control"
+                  value={cantidad_almacenamiento}
+                  onChange={(e) => setCantidadAlmacenamiento(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('ubicacion') && (
+              <div className="form-group">
+                <label htmlFor="ubicacion">Ubicación</label>
+                <input
+                  type="text"
+                  id="ubicacion"
+                  className="form-control"
+                  value={ubicacion}
+                  onChange={(e) => setUbicacion(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('usuario_correo') && (
+              <div className="form-group">
+                <label htmlFor="usuario_correo">Usuario Correo</label>
+                <input
+                  type="text"
+                  id="usuario_correo"
+                  className="form-control"
+                  value={usuario_correo}
+                  onChange={(e) => setUsuarioCorreo(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('contraseña') && (
+              <div className="form-group">
+                <label htmlFor="contraseña">Contraseña</label>
+                <input
+                  type="text"
+                  id="contraseña"
+                  className="form-control"
+                  value={contraseña}
+                  onChange={(e) => setContraseña(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('tipo_conexion') && (
+              <div className="form-group">
+                <label htmlFor="tipo_conexion">Tipo de Conexión</label>
+                <input
+                  type="text"
+                  id="tipo_conexion"
+                  className="form-control"
+                  value={tipo_conexion}
+                  onChange={(e) => setTipoConexion(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('ip') && (
+              <div className="form-group">
+                <label htmlFor="ip">IP</label>
+                <input
+                  type="text"
+                  id="ip"
+                  className="form-control"
+                  value={ip}
+                  onChange={(e) => setIp(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('puerto') && (
+              <div className="form-group">
+                <label htmlFor="puerto">Puerto</label>
+                <input
+                  type="text"
+                  id="puerto"
+                  className="form-control"
+                  value={puerto}
+                  onChange={(e) => setPuerto(e.target.value)}
+                />
+              </div>
+            )}
+            {camposVisibles.includes('usuario_responsable') && (
+              <div className="form-group">
+                <label htmlFor="usuario_responsable">Usuario Responsable</label>
+                <input
+                  type="text"
+                  id="usuario_responsable"
+                  className="form-control"
+                  value={usuario_responsable}
+                  onChange={(e) => setUsuarioResponsable(e.target.value)}
+                />
+              </div>
+            )}
+            
             <div className="form-group">
               <label htmlFor="area_id">Área</label>
               <select
@@ -394,6 +381,7 @@ const ActivoFijoForm = () => {
                 className="form-control"
                 value={area_id}
                 onChange={(e) => setAreaId(e.target.value)}
+                required
               >
                 <option value="">Seleccione un área</option>
                 {areas.map(area => (
