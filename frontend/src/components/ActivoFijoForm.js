@@ -106,13 +106,30 @@ const ActivoFijoForm = () => {
       if (tipo_activo_fijo_id) {
         try {
           const camposResponse = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
-          setCamposVisibles(camposResponse.data.map(campo => campo.Campo.nombre));
+          console.log('Respuesta de campos:', camposResponse.data); // Para depuración
+          
+          // Asumiendo que la respuesta tiene la estructura correcta con el campo_id
+          const camposIds = camposResponse.data
+            .filter(campo => campo.visible) // Solo campos visibles
+            .map(campo => {
+              // Asegúrate de que campo.Campo existe antes de acceder a nombre
+              if (campo.Campo) {
+                return campo.Campo.nombre;
+              }
+              // Si no existe Campo, intenta usar el nombre directamente del campo
+              return campo.nombre;
+            })
+            .filter(Boolean); // Elimina valores undefined/null
+          
+          console.log('Campos visibles:', camposIds); // Para depuración
+          setCamposVisibles(camposIds);
         } catch (error) {
           console.error('Error al obtener campos visibles:', error);
           alert('Error al obtener campos visibles.');
         }
       }
     };
+    
 
     fetchCamposVisibles();
   }, [tipo_activo_fijo_id]);
