@@ -10,27 +10,31 @@ const ActivoFijoDashboard = () => {
   const [areas, setAreas] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [selectedTipo, setSelectedTipo] = useState(null); // Estado para el tipo seleccionado
+  const [tiposActivosConActivos, setTiposActivosConActivos] = useState([]);
   const navigate = useNavigate();
 
   // Cargar lista de activos fijos al montar el componente
   useEffect(() => {
-    const fetchActivosFijos = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/activos-fijos');
-        setActivosFijos(response.data);
-        setFilteredActivosFijos(response.data); // Inicialmente mostrar todos los activos
-      } catch (error) {
-        console.error('Error al obtener activos fijos:', error);
-      }
-    };
+        const [activosFijosResponse, tiposActivosResponse] = await Promise.all([
+          api.get('/activos-fijos'),
+          api.get('/tipos-activos-fijos')
+        ]);
 
-    // Cargar lista de tipos de activos fijos
-    const fetchTiposActivosFijos = async () => {
-      try {
-        const response = await api.get('/tipos-activos-fijos');
-        setTiposActivos(response.data);
+        setActivosFijos(activosFijosResponse.data);
+        setFilteredActivosFijos(activosFijosResponse.data); // Inicialmente mostrar todos los activos
+        setTiposActivos(tiposActivosResponse.data);
+
+        // Obtener tipos de activos que tienen activos fijos asociados
+        const tiposConActivos = tiposActivosResponse.data.filter(tipo => 
+          activosFijosResponse.data.some(activo => activo.tipo_activo_fijo_id === tipo.id)
+        );
+        setTiposActivosConActivos(tiposConActivos);
+
       } catch (error) {
-        console.error('Error al obtener tipos de activos fijos:', error);
+        console.error('Error al obtener datos:', error);
+        alert('Error al obtener datos.');
       }
     };
 
@@ -54,8 +58,7 @@ const ActivoFijoDashboard = () => {
       }
     };
 
-    fetchActivosFijos();
-    fetchTiposActivosFijos();
+    fetchData();
     fetchAreas();
     fetchCompanies();
   }, []);
@@ -126,7 +129,7 @@ const ActivoFijoDashboard = () => {
         onChange={handleSearchChange}
       />
       <div className="mb-3">
-        {tiposActivos.map((tipo) => (
+        {tiposActivosConActivos.map((tipo) => (
           <button
             key={tipo.id}
             className="btn btn-primary me-2"
@@ -135,12 +138,14 @@ const ActivoFijoDashboard = () => {
             {tipo.nombre}
           </button>
         ))}
-        <button
-          className="btn btn-secondary"
-          onClick={handleMostrarTodos}
-        >
-          Mostrar Todos
-        </button>
+        {tiposActivosConActivos.length > 0 && (
+          <button
+            className="btn btn-secondary"
+            onClick={handleMostrarTodos}
+          >
+            Mostrar Todos
+          </button>
+        )}
       </div>
       <table className="table table-striped">
         <thead>
@@ -150,11 +155,6 @@ const ActivoFijoDashboard = () => {
             <th>Marca</th>
             <th>Modelo</th>
             <th>Serial</th>
-            <th>IMEI</th>
-            <th>CPU</th>
-            <th>RAM</th>
-            <th>Tipo Almacenamiento</th>
-            <th>Cantidad Almacenamiento</th>
             <th>Ubicación</th>
             <th>Correo Electrónico</th>
             <th>Acciones</th>
@@ -168,11 +168,6 @@ const ActivoFijoDashboard = () => {
               <td>{activoFijo.marca}</td>
               <td>{activoFijo.modelo}</td>
               <td>{activoFijo.serial}</td>
-              <td>{activoFijo.imei}</td>
-              <td>{activoFijo.cpu}</td>
-              <td>{activoFijo.ram}</td>
-              <td>{activoFijo.tipo_almacenamiento}</td>
-              <td>{activoFijo.cantidad_almacenamiento}</td>
               <td>{activoFijo.ubicacion}</td>
               <td>{activoFijo.usuario_correo}</td>
               <td>
