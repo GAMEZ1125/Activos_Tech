@@ -14,9 +14,16 @@ const CampoActivoFijoForm = () => {
       try {
         const response = await api.get('/campos');
         setCampos(response.data);
-        // Selecciona automáticamente los campos obligatorios
-        const obligatorios = response.data.filter(campo => campo.obligatorio).map(campo => campo.id);
-        setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...obligatorios])]);
+        
+        // Obtener campos obligatorios y agregarlos a selectedCampos
+        const camposObligatorios = response.data
+          .filter(campo => campo.obligatorio)
+          .map(campo => campo.id);
+        
+        setSelectedCampos(prevState => {
+          const newState = [...prevState, ...camposObligatorios];
+          return [...new Set(newState)]; // Eliminar duplicados
+        });
       } catch (error) {
         console.error('Error al obtener campos:', error);
         alert('Error al obtener los campos.');
@@ -26,13 +33,14 @@ const CampoActivoFijoForm = () => {
     const fetchSelectedCampos = async () => {
       try {
         const response = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
-        const selected = response.data.map(campo => campo.campo_id);
-        setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...selected])]);
-        // Actualiza los campos con la propiedad visible
-        setCampos(prevCampos => prevCampos.map(campo => ({
-          ...campo,
-          visible: response.data.find(selectedCampo => selectedCampo.campo_id === campo.id)?.visible || false
-        })));
+        const selectedIds = response.data
+          .filter(campo => campo.visible)
+          .map(campo => campo.campo_id);
+
+        setSelectedCampos(prevState => {
+          const newState = [...prevState, ...selectedIds];
+          return [...new Set(newState)]; // Eliminar duplicados
+        });
       } catch (error) {
         console.error('Error al obtener campos seleccionados:', error);
         alert('Error al obtener los campos seleccionados.');
@@ -40,10 +48,16 @@ const CampoActivoFijoForm = () => {
     };
 
     fetchCampos();
-    fetchSelectedCampos();
+    if (tipo_activo_fijo_id) {
+      fetchSelectedCampos();
+    }
   }, [tipo_activo_fijo_id]);
 
   const handleCampoChange = (campoId) => {
+    // No permitir deseleccionar campos obligatorios
+    const campo = campos.find(c => c.id === campoId);
+    if (campo?.obligatorio) return;
+
     setSelectedCampos(prevSelectedCampos =>
       prevSelectedCampos.includes(campoId)
         ? prevSelectedCampos.filter(id => id !== campoId)
