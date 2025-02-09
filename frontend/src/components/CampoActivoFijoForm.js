@@ -14,6 +14,9 @@ const CampoActivoFijoForm = () => {
       try {
         const response = await api.get('/campos');
         setCampos(response.data);
+        // Selecciona automáticamente los campos obligatorios
+        const obligatorios = response.data.filter(campo => campo.obligatorio).map(campo => campo.id);
+        setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...obligatorios])]);
       } catch (error) {
         console.error('Error al obtener campos:', error);
         alert('Error al obtener los campos.');
@@ -23,7 +26,8 @@ const CampoActivoFijoForm = () => {
     const fetchSelectedCampos = async () => {
       try {
         const response = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
-        setSelectedCampos(response.data.map(campo => campo.campo_id));
+        const selected = response.data.map(campo => campo.campo_id);
+        setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...selected])]);
         // Actualiza los campos con la propiedad visible
         setCampos(prevCampos => prevCampos.map(campo => ({
           ...campo,
@@ -76,6 +80,7 @@ const CampoActivoFijoForm = () => {
               id={`campo-${campo.id}`}
               checked={selectedCampos.includes(campo.id)}
               onChange={() => handleCampoChange(campo.id)}
+              disabled={campo.obligatorio} // Deshabilita el checkbox si el campo es obligatorio
             />
             <label className="form-check-label" htmlFor={`campo-${campo.id}`}>
               {campo.nombre}
