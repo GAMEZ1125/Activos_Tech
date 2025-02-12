@@ -23,6 +23,11 @@ const Campo = sequelize.define('Campo', {
     descripcion: {
         type: DataTypes.STRING(255),
         allowNull: true,
+    },
+    obligatorio: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
     }
 }, {
     timestamps: true,
