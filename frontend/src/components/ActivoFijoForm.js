@@ -72,8 +72,7 @@ const ActivoFijoForm = () => {
           setCamposVisibles(camposVisiblesNombres);
 
           // Si es modo edición, obtener los datos del activo
-          if (id) {
-            const activoResponse = await api.get(`/activos-fijos/${id}`);
+          if (id) {            const activoResponse = await api.get(`/activos-fijos/${id}`);
             const data = activoResponse.data;
 
             // Actualizar estados solo para campos visibles
