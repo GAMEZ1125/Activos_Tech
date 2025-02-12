@@ -5,9 +5,25 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transform: scale(0.8); /* Reduce todo al 70% del tamaño original */
+  transform-origin: top left; /* Establece el punto de origen del escalado */
+  width: 142.857143%; /* Compensa el escalado (100% / 0.7) */
+  height: 142.857143%; /* Compensa el escalado (100% / 0.7) */
+  min-height: 142.857143vh; /* Asegura que el contenido escalado llene la pantalla */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Ajusta el contenedor principal para manejar el escalado */
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Ajusta los contenedores bootstrap si los estás usando */
+.container, .container-fluid {
+  max-width: 142.857143% !important;
 }
