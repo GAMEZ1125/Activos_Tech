@@ -4,6 +4,7 @@ const sequelize = require('../config/database');
 const Area = require('./Area');
 const CompanyCliente = require('./CompanyCliente');
 const TipoActivoFijo = require('./TipoActivoFijo');
+const Ubicacion = require('./Ubicacion');
 
 const ActivoFijo = sequelize.define('ActivoFijo', {
     id: {
@@ -55,10 +56,6 @@ const ActivoFijo = sequelize.define('ActivoFijo', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    ubicacion: {
-        type: DataTypes.STRING(200),
-        allowNull: false,
-    },
     usuario_correo: {
         type: DataTypes.STRING(100),
         allowNull: false,
@@ -96,6 +93,14 @@ const ActivoFijo = sequelize.define('ActivoFijo', {
         allowNull: false,
         references: {
             model: CompanyCliente,
+            key: 'id',
+        },
+    },
+    ubicacion_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Ubicacion,
             key: 'id',
         },
     },
