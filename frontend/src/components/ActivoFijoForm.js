@@ -119,6 +119,41 @@ const ActivoFijoForm = () => {
     fetchCamposVisibles();
   }, [tipo_activo_fijo_id, id]);
 
+  // Efecto para cargar ubicaciones cuando cambia la compañía
+  useEffect(() => {
+    const fetchUbicaciones = async () => {
+      if (company_cliente_id) {
+        try {
+          const response = await api.get(`/ubicaciones`);
+          // Filtrar ubicaciones por compañía
+          const ubicacionesFiltradas = response.data.filter(
+            ubicacion => ubicacion.company_cliente_id === parseInt(company_cliente_id)
+          );
+          setUbicaciones(ubicacionesFiltradas);
+          // Limpiar ubicación seleccionada si no está en las ubicaciones filtradas
+          if (!ubicacionesFiltradas.find(u => u.id === parseInt(ubicacion_id))) {
+            setUbicacionId('');
+          }
+        } catch (error) {
+          console.error('Error al obtener ubicaciones:', error);
+          alert('Error al obtener ubicaciones.');
+        }
+      } else {
+        // Si no hay compañía seleccionada, limpiar ubicaciones
+        setUbicaciones([]);
+        setUbicacionId('');
+      }
+    };
+
+    fetchUbicaciones();
+  }, [company_cliente_id]); // Se ejecuta cuando cambia la compañía
+
+  // Manejador para el cambio de compañía
+  const handleCompanyChange = (e) => {
+    setCompanyClienteId(e.target.value);
+    setUbicacionId(''); // Limpiar ubicación cuando cambia la compañía
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -386,7 +421,8 @@ const ActivoFijoForm = () => {
                 id="company_cliente_id"
                 className="form-control"
                 value={company_cliente_id}
-                onChange={(e) => setCompanyClienteId(e.target.value)}
+                onChange={handleCompanyChange}
+                required
               >
                 <option value="">Seleccione una compañía cliente</option>
                 {companies.map(company => (
@@ -402,6 +438,7 @@ const ActivoFijoForm = () => {
                 value={ubicacion_id}
                 onChange={(e) => setUbicacionId(e.target.value)}
                 required
+                disabled={!company_cliente_id} // Deshabilitar si no hay compañía seleccionada
               >
                 <option value="">Seleccione una ubicación</option>
                 {ubicaciones.map(ubicacion => (
