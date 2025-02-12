@@ -1,3 +1,19 @@
 .visible-true + .form-check-label {
   color: green;
 }
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.form-check {
+  margin: 0;
+  padding: 4px;
+}
+
+h2 {
+  margin-bottom: 3rem !important;
+}

@@ -14,6 +14,7 @@ const CampoActivoFijoForm = () => {
       try {
         const response = await api.get('/campos');
         setCampos(response.data);
+        
         // Selecciona automáticamente los campos obligatorios
         const obligatorios = response.data.filter(campo => campo.obligatorio).map(campo => campo.id);
         setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...obligatorios])]);
@@ -40,10 +41,16 @@ const CampoActivoFijoForm = () => {
     };
 
     fetchCampos();
-    fetchSelectedCampos();
+    if (tipo_activo_fijo_id) {
+      fetchSelectedCampos();
+    }
   }, [tipo_activo_fijo_id]);
 
   const handleCampoChange = (campoId) => {
+    // No permitir deseleccionar campos obligatorios
+    const campo = campos.find(c => c.id === campoId);
+    if (campo?.obligatorio) return;
+
     setSelectedCampos(prevSelectedCampos =>
       prevSelectedCampos.includes(campoId)
         ? prevSelectedCampos.filter(id => id !== campoId)
@@ -72,21 +79,23 @@ const CampoActivoFijoForm = () => {
     <div className="container mt-5">
       <h2>Asignar Campos para Tipo de Activo Fijo</h2>
       <form onSubmit={handleSubmit}>
-        {campos.map(campo => (
-          <div key={campo.id} className="form-check">
-            <input
-              type="checkbox"
-              className={`form-check-input ${campo.visible ? 'visible-true' : ''}`}
-              id={`campo-${campo.id}`}
-              checked={selectedCampos.includes(campo.id)}
-              onChange={() => handleCampoChange(campo.id)}
-              disabled={campo.obligatorio} // Deshabilita el checkbox si el campo es obligatorio
-            />
-            <label className="form-check-label" htmlFor={`campo-${campo.id}`}>
-              {campo.nombre}
-            </label>
-          </div>
-        ))}
+        <div className="checkbox-grid">
+          {campos.map(campo => (
+            <div key={campo.id} className="form-check">
+              <input
+                type="checkbox"
+                className={`form-check-input ${campo.visible ? 'visible-true' : ''}`}
+                id={`campo-${campo.id}`}
+                checked={selectedCampos.includes(campo.id)}
+                onChange={() => handleCampoChange(campo.id)}
+                disabled={campo.obligatorio} // Deshabilita el checkbox si el campo es obligatorio
+              />
+              <label className="form-check-label" htmlFor={`campo-${campo.id}`}>
+                {campo.nombre}
+              </label>
+            </div>
+          ))}
+        </div>
         <button type="submit" className="btn btn-primary mt-3">
           Guardar
         </button>

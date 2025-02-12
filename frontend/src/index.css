@@ -5,7 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: scale(0.8); /* Reduce todo al 70% del tamaño original */
+  transform: scale(0.7); /* Reduce todo al 70% del tamaño original */
   transform-origin: top left; /* Establece el punto de origen del escalado */
   width: 142.857143%; /* Compensa el escalado (100% / 0.7) */
   height: 142.857143%; /* Compensa el escalado (100% / 0.7) */
@@ -26,4 +26,18 @@ code {
 /* Ajusta los contenedores bootstrap si los estás usando */
 .container, .container-fluid {
   max-width: 142.857143% !important;
+  margin: 0 auto; /* Centrar horizontalmente */
+  padding: 0 15px; /* Mantener padding consistente */
+}
+
+/* Asegurar que las tablas y formularios se mantengan centrados */
+.table-responsive {
+  width: 100%;
+  margin: 0 auto;
+}
+
+form {
+  width: 100%;
+  max-width: 1200px; /* o el ancho máximo que prefieras */
+  margin: 0 auto;
 }
