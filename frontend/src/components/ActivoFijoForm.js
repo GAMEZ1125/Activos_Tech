@@ -70,16 +70,16 @@ const ActivoFijoForm = () => {
             .map(campo => camposMap[campo.campo_id]);
 
           setCamposVisibles(camposVisiblesNombres);
-          
+
           // Si es modo edición, obtener los datos del activo
           if (id) {
             const activoResponse = await api.get(`/activos-fijos/${id}`);
             const data = activoResponse.data;
-            
+
             // Actualizar estados solo para campos visibles
             Object.entries(data).forEach(([key, value]) => {
               if (camposVisiblesNombres.includes(key)) {
-                switch(key) {
+                switch (key) {
                   case 'nombre_activo_fijo': setNombreActivioFijo(value); break;
                   case 'marca': setMarca(value); break;
                   case 'modelo': setModelo(value); break;
@@ -192,7 +192,7 @@ const ActivoFijoForm = () => {
                 />
               </div>
             )}
-            
+
             {camposVisibles.includes('marca') && (
               <div className="form-group">
                 <label htmlFor="marca">Marca</label>
@@ -364,16 +364,16 @@ const ActivoFijoForm = () => {
             {camposVisibles.includes('usuario_responsable') && (
               <div className="form-group">
                 <label htmlFor="usuario_responsable">Usuario Responsable</label>
-                <input
-                  type="text"
+                <select
                   id="usuario_responsable"
                   className="form-control"
                   value={usuario_responsable}
                   onChange={(e) => setUsuarioResponsable(e.target.value)}
-                />
+                >
+                  <option value="Disponible">Disponible</option>
+                </select>
               </div>
             )}
-            
             <div className="form-group">
               <label htmlFor="area_id">Área</label>
               <select
