@@ -7,6 +7,7 @@ const CampoActivoFijoForm = () => {
   const { tipo_activo_fijo_id } = useParams();
   const [campos, setCampos] = useState([]);
   const [selectedCampos, setSelectedCampos] = useState([]);
+  const [tipoActivoFijoNombre, setTipoActivoFijoNombre] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,10 +15,13 @@ const CampoActivoFijoForm = () => {
       try {
         const response = await api.get('/campos');
         setCampos(response.data);
+        console.log('Campos obtenidos:', response.data);
         
         // Selecciona automáticamente los campos obligatorios
         const obligatorios = response.data.filter(campo => campo.obligatorio).map(campo => campo.id);
+        console.log('Campos obligatorios:', obligatorios);
         setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...obligatorios])]);
+        console.log('Campos seleccionados después de agregar obligatorios:', [...new Set([...selectedCampos, ...obligatorios])]);
       } catch (error) {
         console.error('Error al obtener campos:', error);
         alert('Error al obtener los campos.');
@@ -28,7 +32,9 @@ const CampoActivoFijoForm = () => {
       try {
         const response = await api.get(`/campos-activos-fijos/tipo/${tipo_activo_fijo_id}`);
         const selected = response.data.map(campo => campo.campo_id);
+        console.log('Campos seleccionados del tipo:', selected);
         setSelectedCampos(prevSelectedCampos => [...new Set([...prevSelectedCampos, ...selected])]);
+        console.log('Campos seleccionados después de agregar seleccionados del tipo:', [...new Set([...selectedCampos, ...selected])]);
         // Actualiza los campos con la propiedad visible
         setCampos(prevCampos => prevCampos.map(campo => ({
           ...campo,
@@ -40,9 +46,20 @@ const CampoActivoFijoForm = () => {
       }
     };
 
+    const fetchTipoActivoFijoNombre = async () => {
+      try {
+        const response = await api.get(`/tipos-activos-fijos/${tipo_activo_fijo_id}`);
+        setTipoActivoFijoNombre(response.data.nombre);
+      } catch (error) {
+        console.error('Error al obtener el nombre del tipo de activo fijo:', error);
+        alert('Error al obtener el nombre del tipo de activo fijo.');
+      }
+    };
+
     fetchCampos();
     if (tipo_activo_fijo_id) {
       fetchSelectedCampos();
+      fetchTipoActivoFijoNombre();
     }
   }, [tipo_activo_fijo_id]);
 
@@ -56,6 +73,16 @@ const CampoActivoFijoForm = () => {
         ? prevSelectedCampos.filter(id => id !== campoId)
         : [...prevSelectedCampos, campoId]
     );
+  };
+
+  const handleSelectAll = () => {
+    const allCampos = campos.map(campo => campo.id);
+    setSelectedCampos(allCampos);
+  };
+
+  const handleDeselectAll = () => {
+    const obligatorios = campos.filter(campo => campo.obligatorio).map(campo => campo.id);
+    setSelectedCampos(obligatorios);
   };
 
   const handleSubmit = async (e) => {
@@ -77,8 +104,16 @@ const CampoActivoFijoForm = () => {
 
   return (
     <div className="container mt-5">
-      <h2>Asignar Campos para Tipo de Activo Fijo</h2>
+      <h2>Asignar Campos para Tipo de Activo Fijo: {tipoActivoFijoNombre}</h2>
       <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <button type="button" className="btn btn-secondary me-2" onClick={handleSelectAll}>
+            Vincular Todos
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={handleDeselectAll}>
+            Desvincular Todos
+          </button>
+        </div>
         <div className="checkbox-grid">
           {campos.map(campo => (
             <div key={campo.id} className="form-check">
