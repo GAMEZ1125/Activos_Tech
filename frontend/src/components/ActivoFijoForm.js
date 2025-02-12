@@ -16,7 +16,7 @@ const ActivoFijoForm = () => {
   const [ram, setRam] = useState('');
   const [tipo_almacenamiento, setTipoAlmacenamiento] = useState('');
   const [cantidad_almacenamiento, setCantidadAlmacenamiento] = useState('');
-  const [ubicacion, setUbicacion] = useState('');
+  const [ubicacion_id, setUbicacionId] = useState('');
   const [usuario_correo, setUsuarioCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [tipo_conexion, setTipoConexion] = useState('');
@@ -30,19 +30,22 @@ const ActivoFijoForm = () => {
   const [tiposActivos, setTiposActivos] = useState([]);
   const [areas, setAreas] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [ubicaciones, setUbicaciones] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tiposActivosFijosResponse, areasResponse, companiesResponse] = await Promise.all([
+        const [tiposActivosFijosResponse, areasResponse, companiesResponse, ubicacionesResponse] = await Promise.all([
           api.get('/tipos-activos-fijos'),
           api.get('/areas'),
-          api.get('/company-clientes')
+          api.get('/company-clientes'),
+          api.get('/ubicaciones')
         ]);
 
         setTiposActivos(tiposActivosFijosResponse.data);
         setAreas(areasResponse.data);
         setCompanies(companiesResponse.data);
+        setUbicaciones(ubicacionesResponse.data);
       } catch (error) {
         console.error('Error al obtener datos:', error);
         alert('Error al obtener datos.');
@@ -88,7 +91,7 @@ const ActivoFijoForm = () => {
                   case 'ram': setRam(value); break;
                   case 'tipo_almacenamiento': setTipoAlmacenamiento(value); break;
                   case 'cantidad_almacenamiento': setCantidadAlmacenamiento(value); break;
-                  case 'ubicacion': setUbicacion(value); break;
+                  case 'ubicacion': setUbicacionId(value); break;
                   case 'usuario_correo': setUsuarioCorreo(value); break;
                   case 'contraseña': setContraseña(value); break;
                   case 'tipo_conexion': setTipoConexion(value); break;
@@ -129,7 +132,6 @@ const ActivoFijoForm = () => {
         ram: camposVisibles.includes('ram') ? ram : 'N/A',
         tipo_almacenamiento: camposVisibles.includes('tipo_almacenamiento') ? tipo_almacenamiento : 'N/A',
         cantidad_almacenamiento: camposVisibles.includes('cantidad_almacenamiento') ? cantidad_almacenamiento : 'N/A',
-        ubicacion: camposVisibles.includes('ubicacion') ? ubicacion : 'N/A',
         usuario_correo: camposVisibles.includes('usuario_correo') ? usuario_correo : 'N/A',
         contraseña: camposVisibles.includes('contraseña') ? contraseña : 'N/A',
         tipo_conexion: camposVisibles.includes('tipo_conexion') ? tipo_conexion : 'N/A',
@@ -138,6 +140,7 @@ const ActivoFijoForm = () => {
         usuario_responsable: camposVisibles.includes('usuario_responsable') ? usuario_responsable : 'N/A',
         area_id,
         company_cliente_id,
+        ubicacion_id,
         estado,
         observaciones
       };
@@ -288,18 +291,6 @@ const ActivoFijoForm = () => {
                 />
               </div>
             )}
-            {camposVisibles.includes('ubicacion') && (
-              <div className="form-group">
-                <label htmlFor="ubicacion">Ubicación</label>
-                <input
-                  type="text"
-                  id="ubicacion"
-                  className="form-control"
-                  value={ubicacion}
-                  onChange={(e) => setUbicacion(e.target.value)}
-                />
-              </div>
-            )}
             {camposVisibles.includes('usuario_correo') && (
               <div className="form-group">
                 <label htmlFor="usuario_correo">Usuario Correo</label>
@@ -399,6 +390,21 @@ const ActivoFijoForm = () => {
                 <option value="">Seleccione una compañía cliente</option>
                 {companies.map(company => (
                   <option key={company.id} value={company.id}>{company.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="ubicacion_id">Ubicación</label>
+              <select
+                id="ubicacion_id"
+                className="form-control"
+                value={ubicacion_id}
+                onChange={(e) => setUbicacionId(e.target.value)}
+                required
+              >
+                <option value="">Seleccione una ubicación</option>
+                {ubicaciones.map(ubicacion => (
+                  <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
                 ))}
               </select>
             </div>
