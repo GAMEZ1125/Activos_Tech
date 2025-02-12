@@ -4,6 +4,7 @@ import api from '../services/api';
 
 const UbicacionDashboard = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
+  const [companies, setCompanies] = useState([]);
 
   useEffect(() => {
     const fetchUbicaciones = async () => {
@@ -16,7 +17,18 @@ const UbicacionDashboard = () => {
       }
     };
 
+    const fetchCompanies = async () => {
+      try {
+        const response = await api.get('/company-clientes');
+        setCompanies(response.data);
+      } catch (error) {
+        console.error('Error al obtener compañías:', error);
+        alert('Error al obtener compañías.');
+      }
+    };
+
     fetchUbicaciones();
+    fetchCompanies();
   }, []);
 
   const handleDelete = async (id) => {
@@ -29,6 +41,11 @@ const UbicacionDashboard = () => {
         alert('Error al eliminar la ubicación.');
       }
     }
+  };
+
+  const getCompanyName = (companyId) => {
+    const company = companies.find(company => company.id === companyId);
+    return company ? company.nombre : 'Desconocido';
   };
 
   return (
@@ -49,7 +66,7 @@ const UbicacionDashboard = () => {
           {ubicaciones.map(ubicacion => (
             <tr key={ubicacion.id}>
               <td>{ubicacion.nombre}</td>
-              <td>{ubicacion.company_cliente_id}</td>
+              <td>{getCompanyName(ubicacion.company_cliente_id)}</td>
               <td>
                 <Link to={`/ubicaciones/edit/${ubicacion.id}`} className="btn btn-warning me-2">
                   Editar
