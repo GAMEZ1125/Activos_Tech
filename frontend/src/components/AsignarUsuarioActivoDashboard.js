@@ -105,12 +105,12 @@ const AsignarUsuarioActivoDashboard = () => {
                                     >
                                         Editar
                                     </Link> */}
-                                    <button
+                                    {/* <button
                                         className="btn btn-danger btn-sm me-2"
                                         onClick={() => handleDelete(activo.id)}
                                     >
                                         Eliminar
-                                    </button>
+                                    </button> */}
                                     <button
                                         className="btn btn-success btn-sm"
                                         onClick={() => handleAssign(activo.id)}

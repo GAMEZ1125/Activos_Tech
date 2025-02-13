@@ -14,7 +14,8 @@ const AsignarUsuarioActivoForm = () => {
   const [usuario_responsable, setUsuarioResponsable] = useState('');
   const [ubicacion_id, setUbicacionId] = useState('');
   const [ubicaciones, setUbicaciones] = useState([]);
-  const [companies, setCompanies] = useState([]);
+  const [company_cliente_id, setCompanyClienteId] = useState('');
+  const [camposVisibles, setCamposVisibles] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +26,6 @@ const AsignarUsuarioActivoForm = () => {
         ]);
 
         setUbicaciones(ubicacionesResponse.data);
-        setCompanies(companiesResponse.data);
 
         if (id) {
           const response = await api.get(`/activos-fijos/${id}`);
@@ -37,6 +37,22 @@ const AsignarUsuarioActivoForm = () => {
           setPuerto(data.puerto);
           setUsuarioResponsable(data.usuario_responsable);
           setUbicacionId(data.ubicacion_id);
+          setCompanyClienteId(data.company_cliente_id);
+
+          // Obtener campos visibles con join a tabla campos
+          const camposResponse = await api.get(`/campos-activos-fijos/tipo/${data.tipo_activo_fijo_id}`);
+          const camposMap = {};
+          const allCamposResponse = await api.get('/campos');
+          allCamposResponse.data.forEach(campo => {
+            camposMap[campo.id] = campo.nombre;
+          });
+
+          // Mapear campo_id a nombres de campos
+          const camposVisiblesNombres = camposResponse.data
+            .filter(campo => campo.visible)
+            .map(campo => camposMap[campo.campo_id]);
+
+          setCamposVisibles(camposVisiblesNombres);
         }
       } catch (error) {
         console.error('Error al obtener datos:', error);
@@ -46,6 +62,34 @@ const AsignarUsuarioActivoForm = () => {
 
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    const fetchUbicaciones = async () => {
+      if (company_cliente_id) {
+        try {
+          const response = await api.get(`/ubicaciones`);
+          // Filtrar ubicaciones por compañía
+          const ubicacionesFiltradas = response.data.filter(
+            ubicacion => ubicacion.company_cliente_id === parseInt(company_cliente_id)
+          );
+          setUbicaciones(ubicacionesFiltradas);
+          // Limpiar ubicación seleccionada si no está en las ubicaciones filtradas
+          if (!ubicacionesFiltradas.find(u => u.id === parseInt(ubicacion_id))) {
+            setUbicacionId('');
+          }
+        } catch (error) {
+          console.error('Error al obtener ubicaciones:', error);
+          alert('Error al obtener ubicaciones.');
+        }
+      } else {
+        // Si no hay compañía seleccionada, limpiar ubicaciones
+        setUbicaciones([]);
+        setUbicacionId('');
+      }
+    };
+
+    fetchUbicaciones();
+  }, [company_cliente_id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,6 +122,82 @@ const AsignarUsuarioActivoForm = () => {
     <div className="container mt-5">
       <h2>{id ? 'Editar Activo Fijo' : 'Crear Activo Fijo'}</h2>
       <form onSubmit={handleSubmit}>
+        {camposVisibles.includes('usuario_correo') && (
+          <div className="form-group">
+            <label htmlFor="usuario_correo">Usuario Correo</label>
+            <input
+              type="text"
+              id="usuario_correo"
+              className="form-control"
+              value={usuario_correo}
+              onChange={(e) => setUsuarioCorreo(e.target.value)}
+              required
+            />
+          </div>
+        )}
+        {camposVisibles.includes('contraseña') && (
+          <div className="form-group">
+            <label htmlFor="contraseña">Contraseña</label>
+            <input
+              type="text"
+              id="contraseña"
+              className="form-control"
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+              required
+            />
+          </div>
+        )}
+        {camposVisibles.includes('tipo_conexion') && (
+          <div className="form-group">
+            <label htmlFor="tipo_conexion">Tipo de Conexión</label>
+            <input
+              type="text"
+              id="tipo_conexion"
+              className="form-control"
+              value={tipo_conexion}
+              onChange={(e) => setTipoConexion(e.target.value)}
+              required
+            />
+          </div>
+        )}
+        {camposVisibles.includes('ip') && (
+          <div className="form-group">
+            <label htmlFor="ip">IP</label>
+            <input
+              type="text"
+              id="ip"
+              className="form-control"
+              value={ip}
+              onChange={(e) => setIp(e.target.value)}
+              required
+            />
+          </div>
+        )}
+        {camposVisibles.includes('puerto') && (
+          <div className="form-group">
+            <label htmlFor="puerto">Puerto</label>
+            <input
+              type="text"
+              id="puerto"
+              className="form-control"
+              value={puerto}
+              onChange={(e) => setPuerto(e.target.value)}
+              required
+            />
+          </div>
+        )}
+        <div className="form-group">
+          <label htmlFor="usuario_responsable">Usuario Responsable</label>
+          <input
+            type="text"
+            id="usuario_responsable"
+            className="form-control"
+            value={usuario_responsable}
+            onChange={(e) => setUsuarioResponsable(e.target.value)}
+            required
+          />
+        </div>
         <div className="form-group">
           <label htmlFor="ubicacion_id">Ubicación</label>
           <select
@@ -91,73 +211,6 @@ const AsignarUsuarioActivoForm = () => {
             {ubicaciones.map(ubicacion => (
               <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
             ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="usuario_correo">Usuario Correo</label>
-          <input
-            type="text"
-            id="usuario_correo"
-            className="form-control"
-            value={usuario_correo}
-            onChange={(e) => setUsuarioCorreo(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="contraseña">Contraseña</label>
-          <input
-            type="text"
-            id="contraseña"
-            className="form-control"
-            value={contraseña}
-            onChange={(e) => setContraseña(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="tipo_conexion">Tipo de Conexión</label>
-          <input
-            type="text"
-            id="tipo_conexion"
-            className="form-control"
-            value={tipo_conexion}
-            onChange={(e) => setTipoConexion(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="ip">IP</label>
-          <input
-            type="text"
-            id="ip"
-            className="form-control"
-            value={ip}
-            onChange={(e) => setIp(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="puerto">Puerto</label>
-          <input
-            type="text"
-            id="puerto"
-            className="form-control"
-            value={puerto}
-            onChange={(e) => setPuerto(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="usuario_responsable">Usuario Responsable</label>
-          <select
-            id="usuario_responsable"
-            className="form-control"
-            value={usuario_responsable}
-            onChange={(e) => setUsuarioResponsable(e.target.value)}
-          >
-            <option value="Disponible">Disponible</option>
           </select>
         </div>
         <button type="submit" className="btn btn-primary mt-3">
