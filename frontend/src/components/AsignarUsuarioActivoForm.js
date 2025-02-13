@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 import api from '../services/api';
 import '../css/ActivoFijoForm.css';
 
@@ -16,16 +17,25 @@ const AsignarUsuarioActivoForm = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [company_cliente_id, setCompanyClienteId] = useState('');
   const [camposVisibles, setCamposVisibles] = useState([]);
+  const [usuariosResponsables, setUsuariosResponsables] = useState([]);
+  const [nuevoUsuarioResponsable, setNuevoUsuarioResponsable] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ubicacionesResponse, companiesResponse] = await Promise.all([
+        const [ubicacionesResponse, activosResponse] = await Promise.all([
           api.get('/ubicaciones'),
-          api.get('/company-clientes')
+          api.get('/activos-fijos')
         ]);
 
         setUbicaciones(ubicacionesResponse.data);
+
+        // Obtener usuarios responsables de los activos
+        const usuariosResponsablesData = activosResponse.data.map(activo => ({
+          value: activo.usuario_responsable,
+          label: activo.usuario_responsable
+        }));
+        setUsuariosResponsables(usuariosResponsablesData);
 
         if (id) {
           const response = await api.get(`/activos-fijos/${id}`);
@@ -118,6 +128,15 @@ const AsignarUsuarioActivoForm = () => {
     }
   };
 
+  const handleCreateUser = () => {
+    if (nuevoUsuarioResponsable.trim() !== '') {
+      const newUser = { value: nuevoUsuarioResponsable, label: nuevoUsuarioResponsable };
+      setUsuariosResponsables([...usuariosResponsables, newUser]);
+      setUsuarioResponsable(nuevoUsuarioResponsable);
+      setNuevoUsuarioResponsable('');
+    }
+  };
+
   return (
     <div className="container mt-5">
       <h2>{id ? 'Editar Activo Fijo' : 'Crear Activo Fijo'}</h2>
@@ -189,14 +208,24 @@ const AsignarUsuarioActivoForm = () => {
         )}
         <div className="form-group">
           <label htmlFor="usuario_responsable">Usuario Responsable</label>
+          <Select
+            id="usuario_responsable"
+            options={usuariosResponsables}
+            value={usuariosResponsables.find(user => user.value === usuario_responsable)}
+            onChange={(selectedOption) => setUsuarioResponsable(selectedOption ? selectedOption.value : '')}
+            isClearable
+            placeholder="Seleccione un usuario..."
+          />
           <input
             type="text"
-            id="usuario_responsable"
-            className="form-control"
-            value={usuario_responsable}
-            onChange={(e) => setUsuarioResponsable(e.target.value)}
-            required
+            className="form-control mt-2"
+            placeholder="Nuevo usuario responsable"
+            value={nuevoUsuarioResponsable}
+            onChange={(e) => setNuevoUsuarioResponsable(e.target.value)}
           />
+          <button type="button" className="btn btn-link" onClick={handleCreateUser}>
+            Crear nuevo usuario
+          </button>
         </div>
         <div className="form-group">
           <label htmlFor="ubicacion_id">Ubicación</label>
