@@ -103,6 +103,13 @@ const Navbar = () => {
                 </Link>
               </li>
             )}
+            {(userRole === 'admin' || userRole === 'editor') && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/asignar-usuario">
+                  Asignar Usuario a Activo
+                </Link>
+              </li>
+            )}
           </ul>
           <button className="btn btn-outline-light" onClick={handleLogout}>
             Cerrar Sesión

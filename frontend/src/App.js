@@ -19,6 +19,8 @@ import ActivoFijoForm from './components/ActivoFijoForm';
 import CampoActivoFijoForm from './components/CampoActivoFijoForm';
 import UbicacionDashboard from './components/UbicacionDashboard'; // Importa el componente
 import UbicacionForm from './components/UbicacionForm'; // Importa el componente
+import AsignarUsuarioActivoDashboard from './components/AsignarUsuarioActivoDashboard';
+import AsignarUsuarioActivoForm from './components/AsignarUsuarioActivoForm';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -58,6 +60,9 @@ function App() {
           <Route path="/ubicaciones" element={<UbicacionDashboard />} /> {/* Nueva ruta */}
           <Route path="/ubicaciones/new" element={<UbicacionForm />} /> {/* Nueva ruta */}
           <Route path="/ubicaciones/edit/:id" element={<UbicacionForm />} /> {/* Nueva ruta */}
+          <Route path="/asignar-usuario" element={<AsignarUsuarioActivoDashboard />} />
+          <Route path="/asignar-usuario/new" element={<AsignarUsuarioActivoForm />} />
+          <Route path="/asignar-usuario/edit/:id" element={<AsignarUsuarioActivoForm />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
