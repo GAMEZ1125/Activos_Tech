@@ -18,9 +18,11 @@ const AsignarUsuarioActivoForm = () => {
   const [company_cliente_id, setCompanyClienteId] = useState('');
   const [camposVisibles, setCamposVisibles] = useState([]);
   const [usuariosResponsables, setUsuariosResponsables] = useState([]);
+  const [cargo_responsable, setCargoResponsable] = useState('');
   const [identidad, setIdentidad] = useState('');
   const [nuevoUsuarioResponsable, setNuevoUsuarioResponsable] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const [nombreActivoFijo, setNombreActivoFijo] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,10 +50,12 @@ const AsignarUsuarioActivoForm = () => {
           setIp(data.ip);
           setPuerto(data.puerto);
           setUsuarioResponsable(data.usuario_responsable);
+          setCargoResponsable(data.cargo_responsable);
           setIdentidad(data.identidad);
           setUbicacionId(data.ubicacion_id);
           setCompanyClienteId(data.company_cliente_id);
           setObservaciones(data.observaciones);
+          setNombreActivoFijo(data.nombre_activo_fijo);
 
           // Obtener campos visibles con join a tabla campos
           const camposResponse = await api.get(`/campos-activos-fijos/tipo/${data.tipo_activo_fijo_id}`);
@@ -115,6 +119,7 @@ const AsignarUsuarioActivoForm = () => {
         ip,
         puerto,
         usuario_responsable,
+        cargo_responsable,
         identidad,
         ubicacion_id,
         observaciones
@@ -145,7 +150,7 @@ const AsignarUsuarioActivoForm = () => {
 
   return (
     <div className="container mt-5">
-      <h2>{id ? 'Editar Activo Fijo' : 'Crear Activo Fijo'}</h2>
+      <h2>{id ? `Editar Activo Fijo: ${nombreActivoFijo}` : 'Crear Activo Fijo'}</h2>
       <form onSubmit={handleSubmit}>
         {camposVisibles.includes('usuario_correo') && (
           <div className="form-group">
@@ -233,6 +238,19 @@ const AsignarUsuarioActivoForm = () => {
             Crear nuevo usuario
           </button>
         </div>
+        {camposVisibles.includes('cargo_responsable') && (
+          <div className="form-group">
+            <label htmlFor="cargo_responsable">Cargo Responsable</label>
+            <input
+              type="text"
+              id="cargo_responsable"
+              className="form-control"
+              value={cargo_responsable}
+              onChange={(e) => setCargoResponsable(e.target.value)}
+              required
+            />
+          </div>
+        )}
         {camposVisibles.includes('identidad') && (
           <div className="form-group">
             <label htmlFor="identidad">Identidad</label>

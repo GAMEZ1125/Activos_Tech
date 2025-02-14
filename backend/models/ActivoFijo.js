@@ -80,6 +80,10 @@ const ActivoFijo = sequelize.define('ActivoFijo', {
         type: DataTypes.STRING(100),
         allowNull: false,
     },
+    cargo_responsable: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+    },
     identidad: {
         type: DataTypes.STRING(50),
         allowNull: false,
