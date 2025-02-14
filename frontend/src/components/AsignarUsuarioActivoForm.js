@@ -18,7 +18,9 @@ const AsignarUsuarioActivoForm = () => {
   const [company_cliente_id, setCompanyClienteId] = useState('');
   const [camposVisibles, setCamposVisibles] = useState([]);
   const [usuariosResponsables, setUsuariosResponsables] = useState([]);
+  const [identidad, setIdentidad] = useState('');
   const [nuevoUsuarioResponsable, setNuevoUsuarioResponsable] = useState('');
+  const [observaciones, setObservaciones] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,8 +48,10 @@ const AsignarUsuarioActivoForm = () => {
           setIp(data.ip);
           setPuerto(data.puerto);
           setUsuarioResponsable(data.usuario_responsable);
+          setIdentidad(data.identidad);
           setUbicacionId(data.ubicacion_id);
           setCompanyClienteId(data.company_cliente_id);
+          setObservaciones(data.observaciones);
 
           // Obtener campos visibles con join a tabla campos
           const camposResponse = await api.get(`/campos-activos-fijos/tipo/${data.tipo_activo_fijo_id}`);
@@ -111,7 +115,9 @@ const AsignarUsuarioActivoForm = () => {
         ip,
         puerto,
         usuario_responsable,
-        ubicacion_id
+        identidad,
+        ubicacion_id,
+        observaciones
       };
 
       if (id) {
@@ -227,6 +233,19 @@ const AsignarUsuarioActivoForm = () => {
             Crear nuevo usuario
           </button>
         </div>
+        {camposVisibles.includes('identidad') && (
+          <div className="form-group">
+            <label htmlFor="identidad">Identidad</label>
+            <input
+              type="text"
+              id="identidad"
+              className="form-control"
+              value={identidad}
+              onChange={(e) => setIdentidad(e.target.value)}
+              required
+            />
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="ubicacion_id">Ubicación</label>
           <select
@@ -241,6 +260,15 @@ const AsignarUsuarioActivoForm = () => {
               <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
             ))}
           </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="observaciones">Observaciones</label>
+          <textarea
+            id="observaciones"
+            className="form-control"
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
+          />
         </div>
         <button type="submit" className="btn btn-primary mt-3">
           Guardar
