@@ -50,12 +50,12 @@ const AsignarUsuarioActivoForm = () => {
           setIp(data.ip);
           setPuerto(data.puerto);
           setUsuarioResponsable(data.usuario_responsable);
-          setCargoResponsable(data.cargo_responsable);
-          setIdentidad(data.identidad);
           setUbicacionId(data.ubicacion_id);
           setCompanyClienteId(data.company_cliente_id);
-          setObservaciones(data.observaciones);
           setNombreActivoFijo(data.nombre_activo_fijo);
+          setCargoResponsable(data.cargo_responsable);
+          setIdentidad(data.identidad);
+          setObservaciones(data.observaciones);
 
           // Obtener campos visibles con join a tabla campos
           const camposResponse = await api.get(`/campos-activos-fijos/tipo/${data.tipo_activo_fijo_id}`);
@@ -96,7 +96,7 @@ const AsignarUsuarioActivoForm = () => {
             setUbicacionId('');
           }
         } catch (error) {
-          // console.error('Error al obtener ubicaciones:', error);
+          console.error('Error al obtener ubicaciones:', error);
           alert('Error al obtener ubicaciones.');
         }
       } else {
@@ -112,19 +112,7 @@ const AsignarUsuarioActivoForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Console.log para verificar los datos antes de enviar
-      // console.log('Datos a enviar:', {
-      //   usuario_correo,
-      //   contraseña,
-      //   tipo_conexion,
-      //   ip,
-      //   puerto,
-      //   usuario_responsable,
-      //   cargo_responsable, // Verificar que este campo esté incluido
-      //   identidad,
-      //   ubicacion_id,
-      //   observaciones
-      // });
+      const usuario_id = localStorage.getItem('userId'); // Obtener ID del usuario logueado
 
       const data = {
         usuario_correo,
@@ -133,24 +121,35 @@ const AsignarUsuarioActivoForm = () => {
         ip,
         puerto,
         usuario_responsable,
-        cargo_responsable, // Asegurarse de incluir este campo
+        cargo_responsable,
         identidad,
         ubicacion_id,
-        observaciones
+        observaciones,
+        usuario_id // Agregar el ID del usuario que realiza el cambio
       };
 
       let response;
       if (id) {
         response = await api.put(`/activos-fijos/${id}`, data);
-        // console.log('Respuesta actualización:', response.data);
+        console.log('Registro de cambio:', {
+          tipo: 'Actualización',
+          usuario: usuario_id,
+          activo: id,
+          fecha: new Date()
+        });
       } else {
         response = await api.post('/activos-fijos', data);
-        // console.log('Respuesta creación:', response.data);
+        console.log('Registro de cambio:', {
+          tipo: 'Creación',
+          usuario: usuario_id,
+          activo: response.data.id,
+          fecha: new Date()
+        });
       }
 
       console.log('Operación exitosa:', response.data);
       alert('Activo fijo guardado con éxito.');
-      navigate('/activos-fijos');
+      navigate('/asignar-usuario');
     } catch (error) {
       console.error('Error detallado:', error.response?.data || error.message);
       console.error('Estado de la respuesta:', error.response?.status);
@@ -237,27 +236,6 @@ const AsignarUsuarioActivoForm = () => {
             />
           </div>
         )}
-        <div className="form-group">
-          <label htmlFor="usuario_responsable">Usuario Responsable</label>
-          <Select
-            id="usuario_responsable"
-            options={usuariosResponsables}
-            value={usuariosResponsables.find(user => user.value === usuario_responsable)}
-            onChange={(selectedOption) => setUsuarioResponsable(selectedOption ? selectedOption.value : '')}
-            isClearable
-            placeholder="Seleccione un usuario..."
-          />
-          <input
-            type="text"
-            className="form-control mt-2"
-            placeholder="Nuevo usuario responsable"
-            value={nuevoUsuarioResponsable}
-            onChange={(e) => setNuevoUsuarioResponsable(e.target.value)}
-          />
-          <button type="button" className="btn btn-link" onClick={handleCreateUser}>
-            Crear nuevo usuario
-          </button>
-        </div>
         {camposVisibles.includes('cargo_responsable') && (
           <div className="form-group">
             <label htmlFor="cargo_responsable">Cargo Responsable</label>
@@ -284,6 +262,39 @@ const AsignarUsuarioActivoForm = () => {
             />
           </div>
         )}
+        {camposVisibles.includes('observaciones') && (
+          <div className="form-group">
+            <label htmlFor="observaciones">Observaciones</label>
+            <textarea
+              id="observaciones"
+              className="form-control"
+              value={observaciones}
+              onChange={(e) => setObservaciones(e.target.value)}
+              required
+            />
+          </div>
+        )}
+        <div className="form-group">
+          <label htmlFor="usuario_responsable">Usuario Responsable</label>
+          <Select
+            id="usuario_responsable"
+            options={usuariosResponsables}
+            value={usuariosResponsables.find(user => user.value === usuario_responsable)}
+            onChange={(selectedOption) => setUsuarioResponsable(selectedOption ? selectedOption.value : '')}
+            isClearable
+            placeholder="Seleccione un usuario..."
+          />
+          <input
+            type="text"
+            className="form-control mt-2"
+            placeholder="Nuevo usuario responsable"
+            value={nuevoUsuarioResponsable}
+            onChange={(e) => setNuevoUsuarioResponsable(e.target.value)}
+          />
+          <button type="button" className="btn btn-link" onClick={handleCreateUser}>
+            Crear nuevo usuario
+          </button>
+        </div>
         <div className="form-group">
           <label htmlFor="ubicacion_id">Ubicación</label>
           <select
@@ -298,15 +309,6 @@ const AsignarUsuarioActivoForm = () => {
               <option key={ubicacion.id} value={ubicacion.id}>{ubicacion.nombre}</option>
             ))}
           </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="observaciones">Observaciones</label>
-          <textarea
-            id="observaciones"
-            className="form-control"
-            value={observaciones}
-            onChange={(e) => setObservaciones(e.target.value)}
-          />
         </div>
         <button type="submit" className="btn btn-primary mt-3">
           Guardar

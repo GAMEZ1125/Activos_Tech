@@ -1,9 +1,9 @@
-// controllers/activoFijoController.js
 const ActivoFijo = require('../models/ActivoFijo');
 const TipoActivoFijo = require('../models/TipoActivoFijo');
 const Area = require('../models/Area');
 const CompanyCliente = require('../models/CompanyCliente');
 const Usuario = require('../models/Usuario');
+const { RegistroCambio } = require('../models/RegistroCambio'); // Importar el modelo RegistroCambio
 
 // Obtener todos los activos fijos
 const getActivosFijos = async (req, res) => {
@@ -33,14 +33,22 @@ const getActivoFijoById = async (req, res) => {
 // Crear un nuevo activo fijo
 const createActivoFijo = async (req, res) => {
   try {
-    const ActivoFijo = await ActivoFijo.create(req.body);
-    res.status(201).json(ActivoFijo);
+    const activoFijo = await ActivoFijo.create(req.body);
+
+    // Registrar el cambio
+    await RegistroCambio.create({
+      activo_fijo_id: activoFijo.id,
+      descripcion_cambio: 'Creación de activo fijo',
+      fecha_cambio: new Date(),
+      usuario_id: req.body.usuario_id // Asegúrate de que el usuario_id se envíe en el cuerpo de la solicitud
+    });
+
+    res.status(201).json(activoFijo);
   } catch (error) {
     console.error('Error al crear activo fijo:', error);
-    res.status(500).json({ message: 'Error al crear activo fijo.' }); 
+    res.status(500).json({ message: 'Error al crear activo fijo.' });
   }
 };
-
 
 // Actualizar un activo fijo
 const updateActivoFijo = async (req, res) => {
@@ -53,6 +61,15 @@ const updateActivoFijo = async (req, res) => {
     }
 
     await activoFijo.update(req.body);
+
+    // Registrar el cambio
+    await RegistroCambio.create({
+      activo_fijo_id: id,
+      descripcion_cambio: 'Actualización de activo fijo',
+      fecha_cambio: new Date(),
+      usuario_id: req.body.usuario_id // Asegúrate de que el usuario_id se envíe en el cuerpo de la solicitud
+    });
+
     res.json(activoFijo);
   } catch (error) {
     console.error('Error al actualizar activo fijo:', error);
@@ -82,5 +99,5 @@ module.exports = {
   getActivoFijoById,
   createActivoFijo,
   updateActivoFijo,
-  deleteActivoFijo,
+  deleteActivoFijo
 };
