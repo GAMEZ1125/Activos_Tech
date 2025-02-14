@@ -96,7 +96,7 @@ const AsignarUsuarioActivoForm = () => {
             setUbicacionId('');
           }
         } catch (error) {
-          console.error('Error al obtener ubicaciones:', error);
+          // console.error('Error al obtener ubicaciones:', error);
           alert('Error al obtener ubicaciones.');
         }
       } else {
@@ -112,6 +112,20 @@ const AsignarUsuarioActivoForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Console.log para verificar los datos antes de enviar
+      // console.log('Datos a enviar:', {
+      //   usuario_correo,
+      //   contraseña,
+      //   tipo_conexion,
+      //   ip,
+      //   puerto,
+      //   usuario_responsable,
+      //   cargo_responsable, // Verificar que este campo esté incluido
+      //   identidad,
+      //   ubicacion_id,
+      //   observaciones
+      // });
+
       const data = {
         usuario_correo,
         contraseña,
@@ -119,23 +133,29 @@ const AsignarUsuarioActivoForm = () => {
         ip,
         puerto,
         usuario_responsable,
-        cargo_responsable,
+        cargo_responsable, // Asegurarse de incluir este campo
         identidad,
         ubicacion_id,
         observaciones
       };
 
+      let response;
       if (id) {
-        await api.put(`/activos-fijos/${id}`, data);
+        response = await api.put(`/activos-fijos/${id}`, data);
+        // console.log('Respuesta actualización:', response.data);
       } else {
-        await api.post('/activos-fijos', data);
+        response = await api.post('/activos-fijos', data);
+        // console.log('Respuesta creación:', response.data);
       }
 
+      console.log('Operación exitosa:', response.data);
       alert('Activo fijo guardado con éxito.');
       navigate('/activos-fijos');
     } catch (error) {
-      console.error('Error al guardar activo fijo:', error);
-      alert('Error al guardar activo fijo.');
+      console.error('Error detallado:', error.response?.data || error.message);
+      console.error('Estado de la respuesta:', error.response?.status);
+      console.error('Headers de la respuesta:', error.response?.headers);
+      alert(`Error al guardar activo fijo: ${error.response?.data?.message || error.message}`);
     }
   };
 
