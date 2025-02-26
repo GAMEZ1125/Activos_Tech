@@ -1,5 +1,5 @@
 // controllers/registroActivoController.js
-const RegistroActivo = require('../models/RegistroActivo');
+const RegistroActivo = require('../models/RegistroCambio');
 
 // Obtener todos los registros de activos
 const getRegistrosActivos = async (req, res) => {

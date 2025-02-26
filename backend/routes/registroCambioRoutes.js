@@ -2,8 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
-const registroActivoController = require('../controllers/registroActivoController');
-const RegistroActivo = require('../models/RegistroActivo');
+const registroActivoController = require('../controllers/registroCambioController');
+const RegistroCambio = require('../models/RegistroCambio');
 const ActivoFijo = require('../models/ActivoFijo');
 const Usuario = require('../models/Usuario');
 const excelJS = require('exceljs');
